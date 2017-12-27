@@ -1,8 +1,16 @@
 require 'socket'
+require 'logger'
+
+class StandardError
+  def report
+    %{#{self.class}: #{message}\n#{backtrace.join("\n")}}
+  end
+end
 
 class Server
 
-	def initialize
+	def initialize(logger)
+	  @logger = logger
 	  @server = TCPServer.new('localhost', port=8080)
 	end
 
@@ -17,6 +25,7 @@ class Server
 	def handle_request(session)
 	  action, *args = session.gets.split(/\s/)
 	  if["*", "/"].include?(action)
+	    @logger.info "executing: '#{action}' with #{args.inspect}"
 	    session.puts(send(action, *args))
 	  else
 	    session.puts("Invalid command")
@@ -29,4 +38,13 @@ class Server
 	  end
 	end
 end
+
+begin
+  logger = Logger.new("development.log")
+  host   = Server.new(logger)
+rescue StandardError => e
+  logger.fatal(e.report)
+  puts "Something seriously bad just happened, existing"
+end
+
 
