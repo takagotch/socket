@@ -1,0 +1,3 @@
+load 'paht/to/simple_http.rb'
+puts SimpleHttp.new('www.google.com', 80).get
+
